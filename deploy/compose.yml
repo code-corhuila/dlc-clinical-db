@@ -31,4 +31,3 @@ volumes:
     name: dlc-clinical-mongo-data
 networks:
   clinical:
-    name: dlc-clinical-dev

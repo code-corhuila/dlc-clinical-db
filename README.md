@@ -48,6 +48,14 @@ runs. The generated roles separate Clinical application work, inbox processing, 
 infrastructure, not this repository, creates database users, enables authentication and supplies their
 secrets outside the local Compose setup.
 
+## Verified local baseline
+
+The current baseline was verified from an empty local store: Liquibase applied the three change sets,
+a second update applied zero changes, strict validators rejected an incomplete amendment, required
+indexes and least-privilege roles were present, and `rollback-count 3` removed the Clinical collections
+and roles before a successful reapplication. Keep this sequence as the required local PR evidence until
+the team adopts a replacement for remote CI.
+
 ## Layout
 
 ```text
