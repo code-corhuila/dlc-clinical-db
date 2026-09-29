@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: clinical-003-create-service-role
+      author: dlc-clinical
+      changes:
+        - runCommand:
+            command: '{"createRole":"clinical_service","privileges":[{"resource":{"db":"clinical","collection":""},"actions":["find","insert","update"]}],"roles":[]}'
+      rollback:
+        - runCommand:
+            command: '{"dropRole":"clinical_service"}'
