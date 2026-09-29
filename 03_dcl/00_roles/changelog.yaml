@@ -1,10 +1,18 @@
 databaseChangeLog:
   - changeSet:
-      id: clinical-003-create-service-role
+      id: clinical-003-create-service-roles
       author: dlc-clinical
       changes:
         - runCommand:
-            command: '{"createRole":"clinical_service","privileges":[{"resource":{"db":"clinical","collection":""},"actions":["find","insert","update"]}],"roles":[]}'
+            command: '{"createRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"clinical_records"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"consultations"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"diagnoses"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"clinical_entries"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"treatments"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"procedures"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"procedure_extras"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"care_closures"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"outbox_events"},"actions":["insert"]}],"roles":[]}'
+        - runCommand:
+            command: '{"createRole":"clinical_inbox_consumer","privileges":[{"resource":{"db":"clinical","collection":"inbox_events"},"actions":["find","insert","update"]}],"roles":[]}'
+        - runCommand:
+            command: '{"createRole":"clinical_outbox_publisher","privileges":[{"resource":{"db":"clinical","collection":"outbox_events"},"actions":["find","update"]}],"roles":[]}'
       rollback:
         - runCommand:
-            command: '{"dropRole":"clinical_service"}'
+            command: '{"dropRole":"clinical_outbox_publisher"}'
+        - runCommand:
+            command: '{"dropRole":"clinical_inbox_consumer"}'
+        - runCommand:
+            command: '{"dropRole":"clinical_application"}'

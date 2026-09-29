@@ -8,7 +8,7 @@
 
 ## How it was tested
 
-<!-- List local evidence and the db-ci.yml result. -->
+<!-- List local Docker, MongoDB and Liquibase validation evidence. -->
 
 ## Promotion trace
 
