@@ -15,12 +15,14 @@ billing, identity, sessions or cross-domain workflow state.
 ## Data baseline
 
 - MongoDB 8, with a single-node replica set for local development and transaction support.
-- Liquibase with the MongoDB extension for ordered, repeatable migrations.
+- Liquibase with the MongoDB extension for ordered, forward-only schema changesets.
 - JSON Schema validators and named unique indexes are part of every collection definition.
 - Seeds contain only non-production development data.
 
-The local database uses `clinical` and the replica set `rs0`. Use the URI declared in
-`.env.example`; do not place secrets or real patient data in this repository.
+Structural changesets are never edited after deployment. If a migration fails, stop the rollout,
+restore from the verified backup or execute the documented compensating changeset, then create a
+new forward migration; do not rewrite migration history. The local database uses `clinical` and
+the replica set `rs0`; do not place secrets or real patient data in this repository.
 
 ## Documentation
 
