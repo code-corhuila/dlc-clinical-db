@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - include:
+      file: 00_collections/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 01_validators/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 02_indexes/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 03_views/changelog.yaml
+      relativeToChangelogFile: true
