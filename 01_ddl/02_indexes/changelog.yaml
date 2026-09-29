@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: clinical-002-create-indexes
+      author: dlc-clinical
+      changes:
+        - createIndex: { collectionName: clinical_records, keys: '{"patientId":1}', options: '{"name":"uq_clinical_records_patient_id","unique":true}' }
+        - createIndex: { collectionName: consultations, keys: '{"consultationId":1}', options: '{"name":"uq_consultations_consultation_id","unique":true}' }
+        - createIndex: { collectionName: consultations, keys: '{"clinicalRecordId":1,"createdAt":-1}', options: '{"name":"idx_consultations_record_created_at"}' }
+        - createIndex: { collectionName: consultations, keys: '{"appointmentId":1}', options: '{"name":"idx_consultations_appointment_id","sparse":true}' }
+        - createIndex: { collectionName: diagnoses, keys: '{"diagnosisId":1}', options: '{"name":"uq_diagnoses_diagnosis_id","unique":true}' }
+        - createIndex: { collectionName: diagnoses, keys: '{"clinicalRecordId":1,"createdAt":-1}', options: '{"name":"idx_diagnoses_record_created_at"}' }
+        - createIndex: { collectionName: clinical_entries, keys: '{"entryId":1}', options: '{"name":"uq_clinical_entries_entry_id","unique":true}' }
+        - createIndex: { collectionName: clinical_entries, keys: '{"clinicalRecordId":1,"createdAt":-1}', options: '{"name":"idx_clinical_entries_record_created_at"}' }
+        - createIndex: { collectionName: treatments, keys: '{"treatmentId":1}', options: '{"name":"uq_treatments_treatment_id","unique":true}' }
+        - createIndex: { collectionName: treatments, keys: '{"clinicalRecordId":1,"status":1,"updatedAt":-1}', options: '{"name":"idx_treatments_record_status_updated_at"}' }
+        - createIndex: { collectionName: procedures, keys: '{"procedureId":1}', options: '{"name":"uq_procedures_procedure_id","unique":true}' }
+        - createIndex: { collectionName: procedures, keys: '{"completionIdempotencyKey":1}', options: '{"name":"uq_procedures_completion_idempotency_key","unique":true,"sparse":true}' }
+        - createIndex: { collectionName: procedures, keys: '{"appointmentId":1,"status":1}', options: '{"name":"idx_procedures_appointment_status"}' }
+        - createIndex: { collectionName: procedure_extras, keys: '{"sourceRecordId":1}', options: '{"name":"uq_procedure_extras_source_record_id","unique":true}' }
+        - createIndex: { collectionName: procedure_extras, keys: '{"procedureId":1}', options: '{"name":"idx_procedure_extras_procedure_id"}' }
+        - createIndex: { collectionName: care_closures, keys: '{"closureId":1}', options: '{"name":"uq_care_closures_closure_id","unique":true}' }
+        - createIndex: { collectionName: care_closures, keys: '{"procedureId":1}', options: '{"name":"uq_care_closures_procedure_id","unique":true}' }
+        - createIndex: { collectionName: care_closures, keys: '{"status":1,"updatedAt":1}', options: '{"name":"idx_care_closures_status_updated_at"}' }
+        - createIndex: { collectionName: inbox_events, keys: '{"eventId":1}', options: '{"name":"uq_inbox_events_event_id","unique":true}' }
+        - createIndex: { collectionName: inbox_events, keys: '{"status":1,"receivedAt":1}', options: '{"name":"idx_inbox_events_status_received_at"}' }
+        - createIndex: { collectionName: outbox_events, keys: '{"eventId":1}', options: '{"name":"uq_outbox_events_event_id","unique":true}' }
+        - createIndex: { collectionName: outbox_events, keys: '{"status":1,"nextAttemptAt":1,"occurredAt":1}', options: '{"name":"idx_outbox_events_publish_work"}' }
+      # Collection rollback removes all indexes. This change set has no standalone inverse.
+      rollback: []
