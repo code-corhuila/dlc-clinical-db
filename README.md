@@ -44,18 +44,22 @@ docker compose -f deploy/compose.yml --profile migrate run --rm liquibase
 
 Run the last command a second time to verify that Liquibase has no pending changesets. The
 `deploy/compose.yml` health check initializes the replica set before the migration container
-runs. The generated role is `clinical_service`; infrastructure, not this repository, creates
-database users, enables authentication and supplies their secrets outside the local Compose setup.
+runs. The generated roles separate Clinical application work, inbox processing, and outbox publishing;
+infrastructure, not this repository, creates database users, enables authentication and supplies their
+secrets outside the local Compose setup.
 
 ## Layout
 
 ```text
-01_ddl/  collections, future validator changes, indexes and views
+01_ddl/  collections, future collMod validator changes, indexes and views
 02_dml/  idempotent development seeds and forward data changes
 03_dcl/  password-free database roles
 changelog/changelog-master.yaml  single Liquibase entry point
 deploy/  fixed MongoDB and Liquibase development environment
 ```
+
+Initial collection validators are supplied with `createCollection`, as required by MongoDB. Later
+validator changes belong in `01_ddl/01_validators` as independent `collMod` changesets.
 
 ## Documentation
 
