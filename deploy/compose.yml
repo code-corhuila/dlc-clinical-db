@@ -1,3 +1,5 @@
+name: dlc-clinical-db
+
 services:
   mongo:
     image: mongo@sha256:4968f22d0c6c10ef29952f3e807f62872ba22b3312f25803564fbfc08255efc2
