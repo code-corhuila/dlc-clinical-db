@@ -38,8 +38,8 @@ the MongoDB extension and driver required by the project rule.
 
 ```powershell
 Copy-Item .env.example .env
-docker compose -f deploy/compose.yml up -d mongo
-docker compose -f deploy/compose.yml --profile migrate run --rm liquibase
+docker compose --env-file .env -f deploy/compose.yml up -d mongo
+docker compose --env-file .env -f deploy/compose.yml --profile migrate run --rm liquibase
 ```
 
 Run the last command a second time to verify that Liquibase has no pending changesets. The
@@ -47,6 +47,10 @@ Run the last command a second time to verify that Liquibase has no pending chang
 runs. The generated roles separate Clinical application work, inbox processing, and outbox publishing;
 infrastructure, not this repository, creates database users, enables authentication and supplies their
 secrets outside the local Compose setup.
+
+`deploy/compose.yml` lives in a subdirectory, so the commands explicitly select the repository's
+`.env` file. This keeps the local Mongo and Liquibase configuration independent of the directory
+from which Docker Compose derives its project settings.
 
 ## Verified local baseline
 
