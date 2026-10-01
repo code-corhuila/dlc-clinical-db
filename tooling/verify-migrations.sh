@@ -42,6 +42,9 @@ run_migrator() {
       --database-changelog-lock-table-name=databasechangeloglock_clinical "$@"
 }
 
+MONGO_HOST="$mongo_name" MONGO_PORT=27017 CLINICAL_DB_NAME=clinical MONGO_REPLICA_SET=rs0 PLATFORM_NETWORK_NAME="$network_name" \
+  docker compose -f deploy/compose.yml --profile tooling build clinical-db-migrate
+
 run_migrator update
 run_migrator update
 run_migrator status --verbose
