@@ -20,6 +20,7 @@ For `qa` / `main`: document the approved promotion trail.
 - [ ] No secrets or real clinical data are included.
 - [ ] The schema change resides only in `dlc-clinical-db`.
 - [ ] No applied changeset was edited.
+- [ ] Validators, indexes, and rollback operations are included where applicable.
 - [ ] The documented contract and ownership boundary are respected.
 - [ ] Tests and CI evidence are included.
 - [ ] The diff contains fewer than 400 non-test, non-generated lines.
