@@ -8,8 +8,6 @@ services:
       LIQUIBASE_COMMAND_URL: mongodb://${MONGO_HOST:?MONGO_HOST is required}:${MONGO_PORT:-27017}/${CLINICAL_DB_NAME:-clinical}?replicaSet=${MONGO_REPLICA_SET:-rs0}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/changelog-master.yaml
     command: ["--database-changelog-table-name=databasechangelog_clinical", "--database-changelog-lock-table-name=databasechangeloglock_clinical", "update"]
-    volumes:
-      - ../:/workspace:ro
     networks: [platform]
     profiles: [tooling]
 networks:
