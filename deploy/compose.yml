@@ -1,34 +1,18 @@
 services:
-  mongo:
-    image: mongo@sha256:4968f22d0c6c10ef29952f3e807f62872ba22b3312f25803564fbfc08255efc2
-    container_name: dlc-clinical-mongo-dev
-    command: ["mongod", "--replSet", "${MONGO_REPLICA_SET:-rs0}", "--bind_ip_all"]
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
-    volumes:
-      - dlc-clinical-mongo-data:/data/db
-    networks: [clinical]
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongo:27017\"}]}); 1 }' | grep 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-  liquibase:
+  clinical-db-migrate:
     build:
       context: ..
       dockerfile: deploy/liquibase.Dockerfile
-    depends_on:
-      mongo:
-        condition: service_healthy
+    working_dir: /workspace
     environment:
-      LIQUIBASE_COMMAND_URL: ${LIQUIBASE_COMMAND_URL}
+      LIQUIBASE_COMMAND_URL: mongodb://${MONGO_HOST:?MONGO_HOST is required}:${MONGO_PORT:-27017}/${CLINICAL_DB_NAME:-clinical}?replicaSet=${MONGO_REPLICA_SET:-rs0}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/changelog-master.yaml
-    command: update
-    networks: [clinical]
-    profiles: [migrate]
-volumes:
-  dlc-clinical-mongo-data:
-    name: dlc-clinical-mongo-data
+    command: ["--database-changelog-table-name=databasechangelog_clinical", "--database-changelog-lock-table-name=databasechangeloglock_clinical", "update"]
+    volumes:
+      - ../:/workspace:ro
+    networks: [platform]
+    profiles: [tooling]
 networks:
-  clinical:
-    name: dlc-clinical-dev
+  platform:
+    name: ${PLATFORM_NETWORK_NAME:-platform}
+    external: true

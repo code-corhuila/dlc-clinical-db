@@ -1,4 +1,5 @@
 .env
+*.pem
 .idea/
 .vscode/
 *.log
