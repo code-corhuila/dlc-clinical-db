@@ -1,23 +1,27 @@
 ## User story
 
-<!-- code-corhuila/dlc-docs#NN -->
+Refs: code-corhuila/dlc-docs#NN
 
 ## What changes and why
 
-<!-- Describe the bounded-context change and its motivation. -->
 
 ## How it was tested
 
-<!-- List local Docker, MongoDB and Liquibase validation evidence. -->
+Include the relevant `ci.yml` result and local verification evidence.
 
-## Promotion trace
+## Promotion trail
 
-<!-- Required only for qa/main: commits re-applied with cherry-pick -x. -->
+For `develop`: N/A
+
+For `qa` / `main`: document the approved promotion trail.
 
 ## Checklist
 
 - [ ] No secrets or real clinical data are included.
 - [ ] The schema change resides only in `dlc-clinical-db`.
-- [ ] Validators, indexes, and rollbacks are included where applicable.
-- [ ] Contracts and data ownership are preserved.
-- [ ] The change does not exceed 400 non-test code lines; it is split when necessary.
+- [ ] No applied changeset was edited.
+- [ ] Validators, indexes, and rollback operations are included where applicable.
+- [ ] The documented contract and ownership boundary are respected.
+- [ ] Tests and CI evidence are included.
+- [ ] The diff contains fewer than 400 non-test, non-generated lines.
+- [ ] The commit follows Conventional Commits.
