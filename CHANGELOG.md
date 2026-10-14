@@ -9,12 +9,13 @@ tagged `v<version>` after the merge. Nothing is merged between permanent branche
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-14
+
 MVP 2: persistence foundation of the Clinical context (MongoDB, logical database `clinical`) for HU-CLN-001
 ([#5](https://github.com/code-corhuila/dlc-clinical-db/issues/5)), HU-CLN-002
 ([#6](https://github.com/code-corhuila/dlc-clinical-db/issues/6)), HU-CLN-003
 ([#7](https://github.com/code-corhuila/dlc-clinical-db/issues/7)) and HU-XCT-001
-([#8](https://github.com/code-corhuila/dlc-clinical-db/issues/8)). No release on `main` yet; this section becomes
-`[2.0.0] - <merge date>` inside `release/2.0.0`.
+([#8](https://github.com/code-corhuila/dlc-clinical-db/issues/8)). Released through `release/2.0.0`, tagged `v2.0.0` after the merge.
 
 ### Added
 
