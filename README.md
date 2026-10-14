@@ -12,17 +12,54 @@ Clinical owns clinical histories, antecedents, allergies, consultations, diagnos
 procedures and their evolution. It does not own administrative patient data, appointments,
 billing, identity, sessions or cross-domain workflow state.
 
-## Data baseline
+## Implemented database baseline
 
 - MongoDB 8, with a single-node replica set for local development and transaction support.
 - Liquibase with the MongoDB extension for ordered, forward-only schema changesets.
-- JSON Schema validators and named unique indexes are part of every collection definition.
-- Seeds contain only non-production development data.
+- JSON Schema validators (`strict` / `error`) and named indexes are part of every collection definition.
+- The initial migration creates `clinical_records`, `consultations`, `diagnoses`,
+  `clinical_entries`, `treatments`, `procedures`, `procedure_extras`,
+  `care_closures`, `inbox_events`, and `outbox_events`.
+- `clinical_records.patientId`, stable aggregate identifiers, idempotency keys, event IDs,
+  extra source records, and care-closure procedure references have explicit unique indexes.
+- Clinical documents intentionally contain no money, currency, price, or amount fields.
+- `02_dml` is reserved for idempotent, non-production development seeds and future data fixes;
+  the baseline deliberately does not insert clinical data.
 
 Structural changesets are never edited after deployment. If a migration fails, stop the rollout,
 restore from the verified backup or execute the documented compensating changeset, then create a
 new forward migration; do not rewrite migration history. The local database uses `clinical` and
 the replica set `rs0`; do not place secrets or real patient data in this repository.
+
+## Local run
+
+Docker Compose starts MongoDB 8 as the one-node `rs0` replica set. Liquibase is built with both
+the MongoDB extension and driver required by the project rule.
+
+```powershell
+Copy-Item .env.example .env
+docker compose -f deploy/compose.yml up -d mongo
+docker compose -f deploy/compose.yml --profile migrate run --rm liquibase
+```
+
+Run the last command a second time to verify that Liquibase has no pending changesets. The
+`deploy/compose.yml` health check initializes the replica set before the migration container
+runs. The generated roles separate Clinical application work, inbox processing, and outbox publishing;
+infrastructure, not this repository, creates database users, enables authentication and supplies their
+secrets outside the local Compose setup.
+
+## Layout
+
+```text
+01_ddl/  collections, future collMod validator changes, indexes and views
+02_dml/  idempotent development seeds and forward data changes
+03_dcl/  password-free database roles
+changelog/changelog-master.yaml  single Liquibase entry point
+deploy/  fixed MongoDB and Liquibase development environment
+```
+
+Initial collection validators are supplied with `createCollection`, as required by MongoDB. Later
+validator changes belong in `01_ddl/01_validators` as independent `collMod` changesets.
 
 ## Documentation
 
