@@ -1,0 +1,16 @@
+services:
+  clinical-db-migrate:
+    build:
+      context: ..
+      dockerfile: deploy/liquibase.Dockerfile
+    working_dir: /workspace
+    environment:
+      LIQUIBASE_COMMAND_URL: mongodb://${MONGO_HOST:?MONGO_HOST is required}:${MONGO_PORT:-27017}/${CLINICAL_DB_NAME:-clinical}?replicaSet=${MONGO_REPLICA_SET:-rs0}
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/changelog-master.yaml
+    command: ["--database-changelog-table-name=databasechangelog_clinical", "--database-changelog-lock-table-name=databasechangeloglock_clinical", "update"]
+    networks: [platform]
+    profiles: [tooling]
+networks:
+  platform:
+    name: ${PLATFORM_NETWORK_NAME:-platform}
+    external: true
