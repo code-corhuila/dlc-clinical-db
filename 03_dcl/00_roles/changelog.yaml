@@ -16,3 +16,13 @@ databaseChangeLog:
             command: '{"dropRole":"clinical_inbox_consumer"}'
         - runCommand:
             command: '{"dropRole":"clinical_application"}'
+  - changeSet:
+      id: clinical-007-grant-idempotency-keys
+      author: dlc-clinical
+      comment: The service reads and inserts retry records; expiry is handled by the TTL index, so no remove/update.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"idempotency_keys"},"actions":["find","insert"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"idempotency_keys"},"actions":["find","insert"]}]}'
