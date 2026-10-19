@@ -1,1 +1,11 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - changeSet:
+      id: clinical-006-align-procedure-extras-with-contract
+      author: dlc-clinical
+      comment: Match clinical-service.yaml (type ADDITIONAL_MATERIAL, description up to 500). New changeset; clinical-001 stays untouched.
+      changes:
+        - runCommand:
+            command: '{"collMod":"procedure_extras","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","sourceRecordId","procedureId","appointmentId","type","quantity","description","clinicalReason","authorId","createdAt"],"properties":{"_id":{"bsonType":"string"},"sourceRecordId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"type":{"enum":["ADDITIONAL_MATERIAL","ADDITIONAL_PROCEDURE","COMPLEXITY_ADJUSTMENT","OTHER_AUTHORIZED_CHARGE"]},"code":{"bsonType":"string","minLength":1,"maxLength":80},"quantity":{"bsonType":["int","long","decimal"],"minimum":0,"exclusiveMinimum":true},"description":{"bsonType":"string","minLength":1,"maxLength":500},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"authorId":{"bsonType":"string"},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"procedure_extras","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","sourceRecordId","procedureId","appointmentId","type","quantity","description","clinicalReason","authorId","createdAt"],"properties":{"_id":{"bsonType":"string"},"sourceRecordId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"type":{"enum":["MATERIAL","ADDITIONAL_PROCEDURE","COMPLEXITY_ADJUSTMENT","OTHER_AUTHORIZED_CHARGE"]},"code":{"bsonType":"string","minLength":1,"maxLength":80},"quantity":{"bsonType":["int","long","decimal"],"minimum":0,"exclusiveMinimum":true},"description":{"bsonType":"string","minLength":1,"maxLength":1000},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"authorId":{"bsonType":"string"},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
