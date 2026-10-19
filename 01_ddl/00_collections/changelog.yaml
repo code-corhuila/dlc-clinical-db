@@ -44,3 +44,13 @@ databaseChangeLog:
         - dropCollection: { collectionName: diagnoses }
         - dropCollection: { collectionName: consultations }
         - dropCollection: { collectionName: clinical_records }
+  - changeSet:
+      id: clinical-004-create-idempotency-keys
+      author: dlc-clinical
+      comment: Retry records for Idempotency-Key (Norma 5.3.8), written in the same transaction as the created resource.
+      changes:
+        - createCollection:
+            collectionName: idempotency_keys
+            options: '{"validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","actorId","operation","idempotencyKey","requestHash","resourceId","responseStatus","createdAt","expiresAt"],"properties":{"_id":{"bsonType":"string"},"actorId":{"bsonType":"string","minLength":1},"operation":{"bsonType":"string","minLength":1,"maxLength":100},"idempotencyKey":{"bsonType":"string","minLength":8,"maxLength":128},"requestHash":{"bsonType":"string","pattern":"^[0-9a-f]{64}$"},"resourceId":{"bsonType":"string","minLength":1},"responseStatus":{"enum":[200,201,202]},"createdAt":{"bsonType":"date"},"expiresAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - dropCollection: { collectionName: idempotency_keys }

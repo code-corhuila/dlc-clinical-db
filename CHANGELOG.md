@@ -37,11 +37,16 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 - Rebuild check in CI (`tooling/verify-migrations.sh`) on PRs to `develop`, `qa` and `main`, against a temporary `rs0`. It runs
   update twice (the second finds nothing pending), then status, history and validate. It checks the validators, indexes and roles,
   rolls everything back and applies it again. ([#4](https://github.com/code-corhuila/dlc-clinical-db/pull/4))
+- `idempotency_keys` collection (`clinical-004`, `clinical-005`, `clinical-007`): strict validator, unique
+  `uq_idempotency_keys_scope` (actor, operation, key), TTL index `idx_idempotency_keys_expires_at`; `clinical_application`
+  may only `find` and `insert` it (Norma 5.3.8).
 
 ### Changed
 
 - The repository no longer runs its own MongoDB or volume; it only owns the migrations of `clinical`. Compatible: no changeset was
   modified. ([#4](https://github.com/code-corhuila/dlc-clinical-db/pull/4))
+- `procedure_extras` validator aligned with `clinical-service.yaml` through `clinical-006`: `type` uses
+  `ADDITIONAL_MATERIAL` and `description` allows up to 500 characters.
 
 ### Security
 

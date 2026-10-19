@@ -48,3 +48,13 @@ databaseChangeLog:
         - dropIndex: { collectionName: consultations, keys: '{"clinicalRecordId":1,"createdAt":-1}' }
         - dropIndex: { collectionName: consultations, keys: '{"consultationId":1}' }
         - dropIndex: { collectionName: clinical_records, keys: '{"patientId":1}' }
+  - changeSet:
+      id: clinical-005-create-idempotency-key-indexes
+      author: dlc-clinical
+      comment: One retry record per actor, operation and key; records expire after their retention window (7 days, design-decisions.md).
+      changes:
+        - createIndex: { collectionName: idempotency_keys, keys: '{"actorId":1,"operation":1,"idempotencyKey":1}', options: '{"name":"uq_idempotency_keys_scope","unique":true}' }
+        - createIndex: { collectionName: idempotency_keys, keys: '{"expiresAt":1}', options: '{"name":"idx_idempotency_keys_expires_at","expireAfterSeconds":0}' }
+      rollback:
+        - dropIndex: { collectionName: idempotency_keys, keys: '{"expiresAt":1}' }
+        - dropIndex: { collectionName: idempotency_keys, keys: '{"actorId":1,"operation":1,"idempotencyKey":1}' }
