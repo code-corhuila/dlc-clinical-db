@@ -58,3 +58,11 @@ databaseChangeLog:
       rollback:
         - dropIndex: { collectionName: idempotency_keys, keys: '{"expiresAt":1}' }
         - dropIndex: { collectionName: idempotency_keys, keys: '{"actorId":1,"operation":1,"idempotencyKey":1}' }
+  - changeSet:
+      id: clinical-009-index-diagnoses-by-consultation
+      author: dlc-clinical
+      comment: Diagnoses are validated and read by their explicit consultation.
+      changes:
+        - createIndex: { collectionName: diagnoses, keys: '{"consultationId":1}', options: '{"name":"idx_diagnoses_consultation_id"}' }
+      rollback:
+        - dropIndex: { collectionName: diagnoses, keys: '{"consultationId":1}' }
