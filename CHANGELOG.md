@@ -47,6 +47,8 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
   modified. ([#4](https://github.com/code-corhuila/dlc-clinical-db/pull/4))
 - `procedure_extras` validator aligned with `clinical-service.yaml` through `clinical-006`: `type` uses
   `ADDITIONAL_MATERIAL` and `description` allows up to 500 characters.
+- `diagnoses` validator requires the explicit `consultationId` and accepts `appointmentId` (`clinical-008`), with index
+  `idx_diagnoses_consultation_id` (`clinical-009`) (CLN-008).
 
 ### Security
 
