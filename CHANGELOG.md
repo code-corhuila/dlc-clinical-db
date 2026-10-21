@@ -51,6 +51,7 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
   `idx_diagnoses_consultation_id` (`clinical-009`) (CLN-008).
 - `consultations` accepts the optional `code` allowed by `clinical-service.yaml` (`clinical-010`); `outbox_events` stores
   `aggregateType` and `actorUserId` for the event envelope (`clinical-011`).
+- `treatments` validator requires `createdBy`, the planning dentist (`clinical-012`) (CLN-004).
 
 ### Security
 
