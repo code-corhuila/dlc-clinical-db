@@ -66,6 +66,8 @@ mongo_eval "const d={_id:'dg-1',diagnosisId:'dg-1',clinicalRecordId:'record-1',d
 
 mongo_eval "const c={_id:'c-9',consultationId:'c-9',clinicalRecordId:'record-1',dentistId:'dentist-1',code:'CONS-1',text:'ok',createdAt:new Date(),updatedAt:new Date(),version:1}; db.consultations.insertOne(c); const o={_id:'ev-9',eventId:'ev-9',eventType:'ConsultationRecorded',eventVersion:'1',aggregateId:'record-1',aggregateType:'ClinicalRecord',actorUserId:'dentist-1',correlationId:'corr',causationId:'corr',payload:{consultationId:'c-9'},occurredAt:new Date(),status:'PENDING',attempts:0,createdAt:new Date()}; db.outbox_events.insertOne(o); try { db.outbox_events.insertOne({...o,_id:'ev-10',eventId:'ev-10',clinicalText:'x'}); throw new Error('undeclared outbox field accepted') } catch(e) { if(e.message.includes('accepted')) throw e }"
 
+mongo_eval "const t={_id:'tr-9',treatmentId:'tr-9',clinicalRecordId:'record-1',patientId:'patient-1',clinicalReason:'r',status:'PLANNED',procedures:[{procedureId:'p-9',procedureCode:'OPER',appointmentId:'a',status:'PLANNED'}],createdBy:'dentist-1',createdAt:new Date(),updatedAt:new Date(),version:1}; db.treatments.insertOne(t); try { const {createdBy,...x}=t; db.treatments.insertOne({...x,_id:'tr-10',treatmentId:'tr-10'}); throw new Error('treatment without author accepted') } catch(e) { if(e.message.includes('accepted')) throw e }"
+
 changeset_count=$(grep -R --include='*.yaml' -E '^[[:space:]]+id:' 01_ddl 02_dml 03_dcl | wc -l | tr -d ' ')
 test "$changeset_count" -gt 0
 run_migrator rollback-count "$changeset_count"
