@@ -52,6 +52,9 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 - `consultations` accepts the optional `code` allowed by `clinical-service.yaml` (`clinical-010`); `outbox_events` stores
   `aggregateType` and `actorUserId` for the event envelope (`clinical-011`).
 - `treatments` validator requires `createdBy`, the planning dentist (`clinical-012`) (CLN-004).
+- `care_closures` follows ADR-014: one closure per encounter (`clinicalRecordId` + `consultationId`, unique index
+  `uq_care_closures_encounter`), fixed `procedureIds`/`manualChargeIds`, the Dentist declaration fields and the
+  `AWAITING_ADMINISTRATIVE_FINALIZATION` status (`clinical-013`, `clinical-014`). The per-procedure index is removed.
 
 ### Security
 
