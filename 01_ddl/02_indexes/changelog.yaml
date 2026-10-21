@@ -66,3 +66,13 @@ databaseChangeLog:
         - createIndex: { collectionName: diagnoses, keys: '{"consultationId":1}', options: '{"name":"idx_diagnoses_consultation_id"}' }
       rollback:
         - dropIndex: { collectionName: diagnoses, keys: '{"consultationId":1}' }
+  - changeSet:
+      id: clinical-014-care-closure-encounter-index
+      author: dlc-clinical
+      comment: One closure per clinicalRecordId and consultationId (ADR-014) replaces the per-procedure unique index.
+      changes:
+        - dropIndex: { collectionName: care_closures, keys: '{"procedureId":1}' }
+        - createIndex: { collectionName: care_closures, keys: '{"clinicalRecordId":1,"consultationId":1}', options: '{"name":"uq_care_closures_encounter","unique":true}' }
+      rollback:
+        - dropIndex: { collectionName: care_closures, keys: '{"clinicalRecordId":1,"consultationId":1}' }
+        - createIndex: { collectionName: care_closures, keys: '{"procedureId":1}', options: '{"name":"uq_care_closures_procedure_id","unique":true}' }
