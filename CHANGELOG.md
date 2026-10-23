@@ -1,8 +1,4 @@
-# Changelo- ADR-017 write protocol: `write_intents` (one per `operationId`, kinds `GUARDED_WRITE`/`DECLARATION`, states
-  `PENDING`/`COMPLETED`/`ABORTED`) and `encounter_admissions` (one per encounter, `OPEN`/`FROZEN`, admitted operations
-  `ADMITTED`/`COMMITTED`/`ABORTED`), with strict validators, unique and reconciliation indexes, no TTL and
-  `clinical_application` find/insert/update grants. ([#19](https://github.com/code-corhuila/dlc-clinical-db/issues/19))
-g
+# Changelog
 
 All notable changes of `dlc-clinical-db` are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
@@ -22,6 +18,12 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 
 ### Added
 
+- ADR-017 write protocol: `write_intents` (one per `operationId`, kinds `GUARDED_WRITE`/`DECLARATION`, states
+  `PENDING`/`COMPLETED`/`ABORTED`) and `encounter_admissions` (one per encounter, `OPEN`/`FROZEN`, admitted operations
+  `ADMITTED`/`COMMITTED`/`ABORTED`), with strict validators, unique and reconciliation indexes, no TTL and
+  `clinical_application` find/insert/update grants. ([#19](https://github.com/code-corhuila/dlc-clinical-db/issues/19))
+- Optional `fencedAt` on `write_intents`: recovery fences an uncommitted intent before aborting it, so a late tagged write
+  never commits after its guard is released (ADR-017).
 - Ten collections with strict `$jsonSchema` validators (`additionalProperties: false`, `validationLevel: strict`,
   `validationAction: error`): `clinical_records`, `consultations`, `diagnoses`, `clinical_entries`, `treatments`, `procedures`,
   `procedure_extras`, `care_closures`, `inbox_events` and `outbox_events`. An amendment needs both `amendsEntryId` and
