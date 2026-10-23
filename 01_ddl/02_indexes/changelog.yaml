@@ -76,3 +76,17 @@ databaseChangeLog:
       rollback:
         - dropIndex: { collectionName: care_closures, keys: '{"clinicalRecordId":1,"consultationId":1}' }
         - createIndex: { collectionName: care_closures, keys: '{"procedureId":1}', options: '{"name":"uq_care_closures_procedure_id","unique":true}' }
+  - changeSet:
+      id: clinical-017-index-write-intents-and-admissions
+      author: dlc-clinical
+      comment: One intent per operationId and one admission document per encounter. No TTL index; intents and admissions never expire by time (ADR-017).
+      changes:
+        - createIndex: { collectionName: write_intents, keys: '{"operationId":1}', options: '{"name":"uq_write_intents_operation_id","unique":true}' }
+        - createIndex: { collectionName: write_intents, keys: '{"state":1,"kind":1}', options: '{"name":"idx_write_intents_reconciliation"}' }
+        - createIndex: { collectionName: encounter_admissions, keys: '{"clinicalRecordId":1,"consultationId":1}', options: '{"name":"uq_encounter_admissions_encounter","unique":true}' }
+        - createIndex: { collectionName: encounter_admissions, keys: '{"admissions.operationId":1}', options: '{"name":"idx_encounter_admissions_operation_id"}' }
+      rollback:
+        - dropIndex: { collectionName: encounter_admissions, keys: '{"admissions.operationId":1}' }
+        - dropIndex: { collectionName: encounter_admissions, keys: '{"clinicalRecordId":1,"consultationId":1}' }
+        - dropIndex: { collectionName: write_intents, keys: '{"state":1,"kind":1}' }
+        - dropIndex: { collectionName: write_intents, keys: '{"operationId":1}' }
