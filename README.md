@@ -25,9 +25,21 @@ then `03_dcl` order. It explicitly stores Clinical migration state in
 `databasechangelog_clinical` and `databasechangeloglock_clinical`.
 
 `MONGO_HOST`, `MONGO_PORT`, `CLINICAL_DB_NAME`, `MONGO_REPLICA_SET` and
-`PLATFORM_NETWORK_NAME` are the only variables this repository reads.
-Authentication is intentionally absent from this contract because the
-infrastructure credential interface has not been specified here.
+`PLATFORM_NETWORK_NAME` describe the engine.
+
+The `dlc-infra-mongo` engine always requires authentication. Add
+`deploy/compose.auth.yml` to run as its migration identity, `clinical_migrator`
+(`dbAdmin`, `readWrite` and `userAdmin` on `clinical` only). Its password is read
+from the file named by `MONGO_MIGRATOR_PASSWORD_FILE`, which `dlc-infra-mongo`
+materializes; it never goes into `.env` or a command line:
+
+```powershell
+$env:MONGO_MIGRATOR_PASSWORD_FILE = "<path supplied by dlc-infra-mongo>"
+docker compose -f deploy/compose.yml -f deploy/compose.auth.yml --profile tooling run --rm clinical-db-migrate
+```
+
+`MONGO_MIGRATOR_USER` overrides the identity name. Without the override file the
+migrator connects anonymously, which only the disposable verification below accepts.
 
 ## Isolated verification
 
@@ -51,7 +63,7 @@ logic; GitHub Actions itself is not executed locally.
 02_dml/  ordered data changes
 03_dcl/  password-free Clinical domain roles
 changelog/changelog-master.yaml  single entry point
-deploy/  Liquibase migrator only
+deploy/  Liquibase migrator only (compose.auth.yml adds the migration identity)
 tooling/ verification used by CI and local development
 ```
 
