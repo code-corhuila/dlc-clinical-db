@@ -64,3 +64,17 @@ databaseChangeLog:
       rollback:
         - dropCollection: { collectionName: encounter_admissions }
         - dropCollection: { collectionName: write_intents }
+  - changeSet:
+      id: clinical-020-create-analytics-projections
+      author: dlc-clinical
+      comment: HU-CLN-003 read-only analytics projections (ADR-006); rebuildable from source events, never the only copy of a fact.
+      changes:
+        - createCollection: { collectionName: analytics_appointment_facts }
+        - createCollection: { collectionName: analytics_weekly_activity }
+        - createCollection: { collectionName: analytics_monthly_revenue }
+        - createCollection: { collectionName: analytics_processed_events }
+      rollback:
+        - dropCollection: { collectionName: analytics_processed_events }
+        - dropCollection: { collectionName: analytics_monthly_revenue }
+        - dropCollection: { collectionName: analytics_weekly_activity }
+        - dropCollection: { collectionName: analytics_appointment_facts }
