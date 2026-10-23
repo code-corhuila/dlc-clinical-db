@@ -18,6 +18,10 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 
 ### Added
 
+- HU-CLN-003 analytics projections (ADR-006): `analytics_appointment_facts`, `analytics_weekly_activity`,
+  `analytics_monthly_revenue` (collected COP as Decimal128, the CLN-006 analytics exception) and `analytics_processed_events`;
+  strict validators without patient identity, a unique day/dentist index, the `clinical_analytics_projector` role and
+  read-only access for `clinical_application`.
 - ADR-017 write protocol: `write_intents` (one per `operationId`, kinds `GUARDED_WRITE`/`DECLARATION`, states
   `PENDING`/`COMPLETED`/`ABORTED`) and `encounter_admissions` (one per encounter, `OPEN`/`FROZEN`, admitted operations
   `ADMITTED`/`COMMITTED`/`ABORTED`), with strict validators, unique and reconciliation indexes, no TTL and

@@ -90,3 +90,13 @@ databaseChangeLog:
         - dropIndex: { collectionName: encounter_admissions, keys: '{"clinicalRecordId":1,"consultationId":1}' }
         - dropIndex: { collectionName: write_intents, keys: '{"state":1,"kind":1}' }
         - dropIndex: { collectionName: write_intents, keys: '{"operationId":1}' }
+  - changeSet:
+      id: clinical-022-index-analytics-projections
+      author: dlc-clinical
+      comment: Daily counts per clinic and per dentist, and the weekly range; processed events are unique by their _id (eventId).
+      changes:
+        - createIndex: { collectionName: analytics_appointment_facts, keys: '{"startAt":1,"dentistId":1}', options: '{"name":"idx_analytics_appointment_facts_start"}' }
+        - createIndex: { collectionName: analytics_weekly_activity, keys: '{"day":1,"dentistId":1}', options: '{"name":"uq_analytics_weekly_activity_day_dentist","unique":true}' }
+      rollback:
+        - dropIndex: { collectionName: analytics_weekly_activity, keys: '{"day":1,"dentistId":1}' }
+        - dropIndex: { collectionName: analytics_appointment_facts, keys: '{"startAt":1,"dentistId":1}' }
