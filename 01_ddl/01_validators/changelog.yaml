@@ -59,3 +59,17 @@ databaseChangeLog:
       rollback:
         - runCommand:
             command: '{"collMod":"care_closures","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","closureId","procedureId","appointmentId","status","appointmentOutcome","billingOutcome","correlationId","causationId","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"closureId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"status":{"enum":["CLOSURE_PENDING","CLOSURE_COMPLETED","CLOSURE_FAILED"]},"appointmentOutcome":{"enum":["PENDING","COMPLETED"]},"billingOutcome":{"enum":["PENDING","COMPLETED"]},"failureReason":{"bsonType":"string","minLength":1,"maxLength":500},"correlationId":{"bsonType":"string"},"causationId":{"bsonType":"string"},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-016-validate-write-intents-and-admissions
+      author: dlc-clinical
+      comment: ADR-017 intents and encounter admissions; identifiers and states only, never monetary values. resourceId and committedAt are set in the same transaction as the guarded write, so reconciliation decides from Clinical data.
+      changes:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"encounter_admissions","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","clinicalRecordId","consultationId","admissionState","admissions","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"admissionState":{"enum":["OPEN","FROZEN"]},"frozenBy":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"admissions":{"bsonType":"array","maxItems":1000,"items":{"bsonType":"object","additionalProperties":false,"required":["operationId","state"],"properties":{"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"state":{"enum":["ADMITTED","COMMITTED","ABORTED"]}}}},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"encounter_admissions","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{},"validationLevel":"off"}'

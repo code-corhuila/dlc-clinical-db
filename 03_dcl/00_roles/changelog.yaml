@@ -26,3 +26,13 @@ databaseChangeLog:
       rollback:
         - runCommand:
             command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"idempotency_keys"},"actions":["find","insert"]}]}'
+  - changeSet:
+      id: clinical-018-grant-write-intents-and-admissions
+      author: dlc-clinical
+      comment: The service and its reconciler read, insert and update intents and admissions; nothing is removed, and no DDL privilege is granted.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"write_intents"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"encounter_admissions"},"actions":["find","insert","update"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"write_intents"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"encounter_admissions"},"actions":["find","insert","update"]}]}'
