@@ -1,4 +1,8 @@
-# Changelog
+# Changelo- ADR-017 write protocol: `write_intents` (one per `operationId`, kinds `GUARDED_WRITE`/`DECLARATION`, states
+  `PENDING`/`COMPLETED`/`ABORTED`) and `encounter_admissions` (one per encounter, `OPEN`/`FROZEN`, admitted operations
+  `ADMITTED`/`COMMITTED`/`ABORTED`), with strict validators, unique and reconciliation indexes, no TTL and
+  `clinical_application` find/insert/update grants. ([#19](https://github.com/code-corhuila/dlc-clinical-db/issues/19))
+g
 
 All notable changes of `dlc-clinical-db` are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow

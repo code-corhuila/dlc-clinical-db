@@ -70,9 +70,33 @@ mongo_eval "const t={_id:'tr-9',treatmentId:'tr-9',clinicalRecordId:'record-1',p
 
 mongo_eval "const c={_id:'cc-1',closureId:'cc-1',clinicalRecordId:'record-1',consultationId:'c-1',appointmentId:'a-1',patientId:'patient-1',dentistId:'dentist-1',procedureIds:['p-1'],manualChargeIds:[],status:'AWAITING_ADMINISTRATIVE_FINALIZATION',appointmentOutcome:'PENDING',billingOutcome:'PENDING',correlationId:'corr',causationId:'corr',completedAt:new Date(),clinicalVersion:2,createdAt:new Date(),updatedAt:new Date(),version:1}; db.care_closures.insertOne(c); for (const [x,m] of [[{...c,_id:'cc-2',closureId:'cc-2'},'encounter unique'],[{...c,_id:'cc-3',closureId:'cc-3',consultationId:'c-3',procedureId:'p-1'},'legacy procedureId'],[{...c,_id:'cc-4',closureId:'cc-4',consultationId:'c-4',status:'OPEN'},'status enum'],[{...c,_id:'cc-5',closureId:'cc-5',consultationId:'c-5',procedureIds:['p','p']},'duplicate procedure']]) { try { db.care_closures.insertOne(x); throw new Error(m+' accepted') } catch(e) { if(e.message.includes(' accepted')) throw e } }; if (!db.care_closures.getIndexes().some(i=>i.name==='uq_care_closures_encounter' && i.unique)) throw new Error('missing uq_care_closures_encounter'); if (db.care_closures.getIndexes().some(i=>i.name==='uq_care_closures_procedure_id')) throw new Error('per-procedure index still present')"
 
+mongo_eval "const op='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'; const w={_id:op,operationId:op,kind:'GUARDED_WRITE',patientId:'patient-1',clinicalRecordId:'record-1',state:'PENDING',createdAt:new Date(),updatedAt:new Date()}; db.write_intents.insertOne(w); for (const [x,m] of [[{...w,_id:'w-2'},'operation unique'],[{...w,_id:'w-3',operationId:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',kind:'OTHER'},'kind enum'],[{...w,_id:'w-4',operationId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',state:'DONE'},'state enum'],[{_id:'w-5',operationId:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'},'required'],[{...w,_id:'w-6',operationId:'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',amount:10},'money field'],[{...w,_id:'w-7',operationId:'not-a-uuid'},'uuid pattern']]) { try { db.write_intents.insertOne(x); throw new Error(m+' accepted') } catch(e) { if(e.message.includes(' accepted')) throw e } }; const a={_id:'adm-1',clinicalRecordId:'record-1',consultationId:'c-1',admissionState:'OPEN',admissions:[{operationId:op,state:'ADMITTED'}],createdAt:new Date(),updatedAt:new Date(),version:1}; db.encounter_admissions.insertOne(a); for (const [x,m] of [[{...a,_id:'adm-2'},'encounter unique'],[{...a,_id:'adm-3',consultationId:'c-3',admissionState:'CLOSED'},'admission enum'],[{...a,_id:'adm-4',consultationId:'c-4',admissions:[{operationId:op,state:'PENDING'}]},'entry enum'],[{...a,_id:'adm-5',consultationId:'c-5',price:1},'money field']]) { try { db.encounter_admissions.insertOne(x); throw new Error(m+' accepted') } catch(e) { if(e.message.includes(' accepted')) throw e } }; for (const [c,i] of [['write_intents','uq_write_intents_operation_id'],['write_intents','idx_write_intents_reconciliation'],['encounter_admissions','uq_encounter_admissions_encounter'],['encounter_admissions','idx_encounter_admissions_operation_id']]) if (!db.getCollection(c).getIndexes().some(x=>x.name===i)) throw new Error('missing index '+i); for (const c of ['write_intents','encounter_admissions']) { if (db.getCollection(c).getIndexes().some(x=>'expireAfterSeconds' in x)) throw new Error('TTL index on '+c); const p=db.getRole('clinical_application',{showPrivileges:true}).privileges.find(x=>x.resource.collection===c); if (!p || !['find','insert','update'].every(y=>p.actions.includes(y)) || p.actions.some(y=>['remove','createIndex','dropIndex','collMod','dropCollection'].includes(y))) throw new Error('clinical_application privileges on '+c) }"
+
 changeset_count=$(grep -R --include='*.yaml' -E '^[[:space:]]+id:' 01_ddl 02_dml 03_dcl | wc -l | tr -d ' ')
 test "$changeset_count" -gt 0
 run_migrator rollback-count "$changeset_count"
-mongo_eval "for (const n of ['clinical_records','clinical_entries','treatments','idempotency_keys']) if (db.getCollectionNames().includes(n)) throw new Error('rollback retained '+n)"
+mongo_eval "for (const n of ['clinical_records','clinical_entries','treatments','idempotency_keys','write_intents','encounter_admissions']) if (db.getCollectionNames().includes(n)) throw new Error('rollback retained '+n)"
 run_migrator update
 run_migrator validate
+
+
+# Upgrade path: migrate an empty store with the previous revision, then apply this one on top of it.
+readonly upgrade_from="${UPGRADE_FROM_REF:-origin/develop}"
+if git rev-parse --verify --quiet "${upgrade_from}^{commit}" >/dev/null; then
+  previous_dir="$(mktemp -d)"
+  git worktree add --detach "$previous_dir" "$upgrade_from" >/dev/null
+  trap 'git worktree remove --force "$previous_dir" >/dev/null 2>&1 || true; cleanup' EXIT
+  run_migrator rollback-count "$changeset_count"
+  (
+    cd "$previous_dir"
+    export COMPOSE_PROJECT_NAME="clinical-previous-${run_id}"
+    MONGO_HOST="$mongo_name" PLATFORM_NETWORK_NAME="$network_name" docker compose -f deploy/compose.yml --profile tooling build clinical-db-migrate
+    run_migrator update
+  )
+  docker image rm -f "clinical-previous-${run_id}-clinical-db-migrate" >/dev/null 2>&1 || true
+  run_migrator update
+  run_migrator validate
+  mongo_eval "for (const n of ['write_intents','encounter_admissions','care_closures']) if (!db.getCollectionNames().includes(n)) throw new Error('upgrade missed '+n)"
+else
+  echo "Upgrade check skipped: $upgrade_from is not available in this checkout." >&2
+fi

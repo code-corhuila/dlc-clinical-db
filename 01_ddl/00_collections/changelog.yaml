@@ -54,3 +54,13 @@ databaseChangeLog:
             options: '{"validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","actorId","operation","idempotencyKey","requestHash","resourceId","responseStatus","createdAt","expiresAt"],"properties":{"_id":{"bsonType":"string"},"actorId":{"bsonType":"string","minLength":1},"operation":{"bsonType":"string","minLength":1,"maxLength":100},"idempotencyKey":{"bsonType":"string","minLength":8,"maxLength":128},"requestHash":{"bsonType":"string","pattern":"^[0-9a-f]{64}$"},"resourceId":{"bsonType":"string","minLength":1},"responseStatus":{"enum":[200,201,202]},"createdAt":{"bsonType":"date"},"expiresAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
       rollback:
         - dropCollection: { collectionName: idempotency_keys }
+  - changeSet:
+      id: clinical-015-create-write-intents-and-admissions
+      author: dlc-clinical
+      comment: ADR-017 persists an intent before any guard or freeze call and tracks admitted writes per encounter.
+      changes:
+        - createCollection: { collectionName: write_intents }
+        - createCollection: { collectionName: encounter_admissions }
+      rollback:
+        - dropCollection: { collectionName: encounter_admissions }
+        - dropCollection: { collectionName: write_intents }
