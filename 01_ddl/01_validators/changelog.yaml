@@ -83,3 +83,25 @@ databaseChangeLog:
       rollback:
         - runCommand:
             command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-021-validate-analytics-projections
+      author: dlc-clinical
+      comment: Counts by appointmentId and dentistId only; no patient identity or clinical narrative. Collected revenue is the only money, as the CLN-006 analytics exception allows (PD-CLN003-05).
+      changes:
+        - runCommand:
+            command: '{"collMod":"analytics_appointment_facts","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","appointmentId","dentistId","startAt","status","sourceEventId","sourceEventType","sourceOccurredAt","updatedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"appointmentId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"dentistId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"startAt":{"bsonType":"date"},"status":{"enum":["SCHEDULED","CANCELADA","NO_ASISTIO","FINALIZADA"]},"appointmentVersion":{"bsonType":["int","long"],"minimum":1},"sourceEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"sourceEventType":{"bsonType":"string","minLength":1,"maxLength":200},"sourceOccurredAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_weekly_activity","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","day","dentistId","count","lastEventId","updatedAt"],"properties":{"_id":{"bsonType":"string","minLength":1},"day":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}-\\d{2}$"},"dentistId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"count":{"bsonType":["int","long"],"minimum":0},"lastEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_monthly_revenue","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","month","collected","payments","lastEventId","updatedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}$"},"month":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}$"},"collected":{"bsonType":"decimal"},"payments":{"bsonType":["int","long"],"minimum":0},"lastEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_processed_events","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","eventId","eventType","occurredAt","processedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"eventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"eventType":{"bsonType":"string","minLength":1,"maxLength":200},"occurredAt":{"bsonType":"date"},"processedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"analytics_processed_events","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_monthly_revenue","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_weekly_activity","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_appointment_facts","validator":{},"validationLevel":"off"}'
