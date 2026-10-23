@@ -73,3 +73,13 @@ databaseChangeLog:
             command: '{"collMod":"encounter_admissions","validator":{},"validationLevel":"off"}'
         - runCommand:
             command: '{"collMod":"write_intents","validator":{},"validationLevel":"off"}'
+  - changeSet:
+      id: clinical-019-write-intent-fence
+      author: dlc-clinical
+      comment: ADR-017 recovery fences an uncommitted intent (fencedAt) before aborting it, so a late tagged write can never commit after its guard is released.
+      changes:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"fencedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
