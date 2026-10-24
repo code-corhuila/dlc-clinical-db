@@ -48,3 +48,55 @@ databaseChangeLog:
         - dropIndex: { collectionName: consultations, keys: '{"clinicalRecordId":1,"createdAt":-1}' }
         - dropIndex: { collectionName: consultations, keys: '{"consultationId":1}' }
         - dropIndex: { collectionName: clinical_records, keys: '{"patientId":1}' }
+  - changeSet:
+      id: clinical-005-create-idempotency-key-indexes
+      author: dlc-clinical
+      comment: One retry record per actor, operation and key; records expire after their retention window (7 days, design-decisions.md).
+      changes:
+        - createIndex: { collectionName: idempotency_keys, keys: '{"actorId":1,"operation":1,"idempotencyKey":1}', options: '{"name":"uq_idempotency_keys_scope","unique":true}' }
+        - createIndex: { collectionName: idempotency_keys, keys: '{"expiresAt":1}', options: '{"name":"idx_idempotency_keys_expires_at","expireAfterSeconds":0}' }
+      rollback:
+        - dropIndex: { collectionName: idempotency_keys, keys: '{"expiresAt":1}' }
+        - dropIndex: { collectionName: idempotency_keys, keys: '{"actorId":1,"operation":1,"idempotencyKey":1}' }
+  - changeSet:
+      id: clinical-009-index-diagnoses-by-consultation
+      author: dlc-clinical
+      comment: Diagnoses are validated and read by their explicit consultation.
+      changes:
+        - createIndex: { collectionName: diagnoses, keys: '{"consultationId":1}', options: '{"name":"idx_diagnoses_consultation_id"}' }
+      rollback:
+        - dropIndex: { collectionName: diagnoses, keys: '{"consultationId":1}' }
+  - changeSet:
+      id: clinical-014-care-closure-encounter-index
+      author: dlc-clinical
+      comment: One closure per clinicalRecordId and consultationId (ADR-014) replaces the per-procedure unique index.
+      changes:
+        - dropIndex: { collectionName: care_closures, keys: '{"procedureId":1}' }
+        - createIndex: { collectionName: care_closures, keys: '{"clinicalRecordId":1,"consultationId":1}', options: '{"name":"uq_care_closures_encounter","unique":true}' }
+      rollback:
+        - dropIndex: { collectionName: care_closures, keys: '{"clinicalRecordId":1,"consultationId":1}' }
+        - createIndex: { collectionName: care_closures, keys: '{"procedureId":1}', options: '{"name":"uq_care_closures_procedure_id","unique":true}' }
+  - changeSet:
+      id: clinical-017-index-write-intents-and-admissions
+      author: dlc-clinical
+      comment: One intent per operationId and one admission document per encounter. No TTL index; intents and admissions never expire by time (ADR-017).
+      changes:
+        - createIndex: { collectionName: write_intents, keys: '{"operationId":1}', options: '{"name":"uq_write_intents_operation_id","unique":true}' }
+        - createIndex: { collectionName: write_intents, keys: '{"state":1,"kind":1}', options: '{"name":"idx_write_intents_reconciliation"}' }
+        - createIndex: { collectionName: encounter_admissions, keys: '{"clinicalRecordId":1,"consultationId":1}', options: '{"name":"uq_encounter_admissions_encounter","unique":true}' }
+        - createIndex: { collectionName: encounter_admissions, keys: '{"admissions.operationId":1}', options: '{"name":"idx_encounter_admissions_operation_id"}' }
+      rollback:
+        - dropIndex: { collectionName: encounter_admissions, keys: '{"admissions.operationId":1}' }
+        - dropIndex: { collectionName: encounter_admissions, keys: '{"clinicalRecordId":1,"consultationId":1}' }
+        - dropIndex: { collectionName: write_intents, keys: '{"state":1,"kind":1}' }
+        - dropIndex: { collectionName: write_intents, keys: '{"operationId":1}' }
+  - changeSet:
+      id: clinical-022-index-analytics-projections
+      author: dlc-clinical
+      comment: Daily counts per clinic and per dentist, and the weekly range; processed events are unique by their _id (eventId).
+      changes:
+        - createIndex: { collectionName: analytics_appointment_facts, keys: '{"startAt":1,"dentistId":1}', options: '{"name":"idx_analytics_appointment_facts_start"}' }
+        - createIndex: { collectionName: analytics_weekly_activity, keys: '{"day":1,"dentistId":1}', options: '{"name":"uq_analytics_weekly_activity_day_dentist","unique":true}' }
+      rollback:
+        - dropIndex: { collectionName: analytics_weekly_activity, keys: '{"day":1,"dentistId":1}' }
+        - dropIndex: { collectionName: analytics_appointment_facts, keys: '{"startAt":1,"dentistId":1}' }

@@ -25,9 +25,21 @@ then `03_dcl` order. It explicitly stores Clinical migration state in
 `databasechangelog_clinical` and `databasechangeloglock_clinical`.
 
 `MONGO_HOST`, `MONGO_PORT`, `CLINICAL_DB_NAME`, `MONGO_REPLICA_SET` and
-`PLATFORM_NETWORK_NAME` are the only variables this repository reads.
-Authentication is intentionally absent from this contract because the
-infrastructure credential interface has not been specified here.
+`PLATFORM_NETWORK_NAME` describe the engine.
+
+The `dlc-infra-mongo` engine always requires authentication. Add
+`deploy/compose.auth.yml` to run as its migration identity, `clinical_migrator`
+(`dbAdmin`, `readWrite` and `userAdmin` on `clinical` only). Its password is read
+from the file named by `MONGO_MIGRATOR_PASSWORD_FILE`, which `dlc-infra-mongo`
+materializes; it never goes into `.env` or a command line:
+
+```powershell
+$env:MONGO_MIGRATOR_PASSWORD_FILE = "<path supplied by dlc-infra-mongo>"
+docker compose -f deploy/compose.yml -f deploy/compose.auth.yml --profile tooling run --rm clinical-db-migrate
+```
+
+`MONGO_MIGRATOR_USER` overrides the identity name. Without the override file the
+migrator connects anonymously, which only the disposable verification below accepts.
 
 ## Isolated verification
 
@@ -51,10 +63,18 @@ logic; GitHub Actions itself is not executed locally.
 02_dml/  ordered data changes
 03_dcl/  password-free Clinical domain roles
 changelog/changelog-master.yaml  single entry point
-deploy/  Liquibase migrator only
+deploy/  Liquibase migrator only (compose.auth.yml adds the migration identity)
 tooling/ verification used by CI and local development
 ```
 
 Applied changesets are immutable. Model changes require a new, documented
 changeset; this repository does not define cross-domain writes or direct
 cross-domain data access.
+
+## Schema version
+
+`schema_info` holds one row, `{_id: "clinical", version: N}`, readable by the runtime role and written only by
+migrations. Every `dlc-clinical-api` process reads it at startup and refuses to run below the version it requires,
+so a database without the unique indexes behind "one record per patient" or "one closure per encounter" is never
+served. A migration the services depend on raises the version with a changeset in `02_dml/01_updates` and is
+released together with the API that requires it. Version 1 covers `clinical-001` to `clinical-027`.
