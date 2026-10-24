@@ -50,3 +50,13 @@ databaseChangeLog:
             command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"analytics_appointment_facts"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_weekly_activity"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_monthly_revenue"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_processed_events"},"actions":["find"]}]}'
         - runCommand:
             command: '{"dropRole":"clinical_analytics_projector"}'
+  - changeSet:
+      id: clinical-027-grant-schema-info-read
+      author: dlc-clinical
+      comment: The services read the schema version at startup; only the migration identity changes it.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"schema_info"},"actions":["find"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"schema_info"},"actions":["find"]}]}'
