@@ -105,3 +105,13 @@ databaseChangeLog:
             command: '{"collMod":"analytics_weekly_activity","validator":{},"validationLevel":"off"}'
         - runCommand:
             command: '{"collMod":"analytics_appointment_facts","validator":{},"validationLevel":"off"}'
+  - changeSet:
+      id: clinical-025-validate-schema-info
+      author: dlc-clinical
+      comment: Only the clinical row, with a positive integer version.
+      changes:
+        - runCommand:
+            command: '{"collMod":"schema_info","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","version","updatedAt"],"properties":{"_id":{"enum":["clinical"]},"version":{"bsonType":["int","long"],"minimum":1},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"schema_info","validator":{},"validationLevel":"off"}'
