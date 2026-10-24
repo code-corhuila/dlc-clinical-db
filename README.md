@@ -70,3 +70,11 @@ tooling/ verification used by CI and local development
 Applied changesets are immutable. Model changes require a new, documented
 changeset; this repository does not define cross-domain writes or direct
 cross-domain data access.
+
+## Schema version
+
+`schema_info` holds one row, `{_id: "clinical", version: N}`, readable by the runtime role and written only by
+migrations. Every `dlc-clinical-api` process reads it at startup and refuses to run below the version it requires,
+so a database without the unique indexes behind "one record per patient" or "one closure per encounter" is never
+served. A migration the services depend on raises the version with a changeset in `02_dml/01_updates` and is
+released together with the API that requires it. Version 1 covers `clinical-001` to `clinical-027`.

@@ -78,3 +78,11 @@ databaseChangeLog:
         - dropCollection: { collectionName: analytics_monthly_revenue }
         - dropCollection: { collectionName: analytics_weekly_activity }
         - dropCollection: { collectionName: analytics_appointment_facts }
+  - changeSet:
+      id: clinical-024-create-schema-info
+      author: dlc-clinical
+      comment: One row with the Clinical schema version; every service refuses to start below the version it requires.
+      changes:
+        - createCollection: { collectionName: schema_info }
+      rollback:
+        - dropCollection: { collectionName: schema_info }
