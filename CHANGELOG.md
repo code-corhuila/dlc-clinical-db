@@ -18,6 +18,8 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 
 ### Added
 
+- `schema_info` with the Clinical schema version (1), validated, read-only for `clinical_application`; the services refuse
+  to start below the version they require (`clinical-024` to `clinical-027`).
 - HU-CLN-003 analytics projections (ADR-006): `analytics_appointment_facts`, `analytics_weekly_activity`,
   `analytics_monthly_revenue` (collected COP as Decimal128, the CLN-006 analytics exception) and `analytics_processed_events`;
   strict validators without patient identity, a unique day/dentist index, the `clinical_analytics_projector` role and
