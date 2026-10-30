@@ -1,0 +1,10 @@
+# TLS for qa and prod (optional in dev): use together with compose.yml and compose.auth.yml. dlc-infra-mongo
+# requires TLS 1.2+ in those stages; the migrator trusts the stage CA, mounted as a secret and never committed.
+services:
+  clinical-db-migrate:
+    secrets:
+      - clinical_migrator_password
+      - mongo_tls_ca
+secrets:
+  mongo_tls_ca:
+    file: ${MONGO_TLS_CA_FILE:?MONGO_TLS_CA_FILE is required for TLS}
