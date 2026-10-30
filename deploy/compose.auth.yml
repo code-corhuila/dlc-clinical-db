@@ -1,18 +1,18 @@
-# Authenticated migrations against the dlc-infra-mongo engine (identity clinical_migrator, ADR-009).
-# Use together with compose.yml; the password file is materialized by dlc-infra-mongo and never committed.
+# Stage runner (dev, qa, prod): authenticated migrations against the dlc-infra-mongo engine as clinical_migrator
+# (ADR-009). Use together with compose.yml, and add compose.tls.yml in qa and prod. The password file is
+# materialized from the stage secret and never committed; the API never receives it.
 services:
   clinical-db-migrate:
     environment:
-      LIQUIBASE_COMMAND_URL: mongodb://${MONGO_HOST:?MONGO_HOST is required}:${MONGO_PORT:-27017}/${CLINICAL_DB_NAME:-clinical}?replicaSet=${MONGO_REPLICA_SET:-rs0}&authSource=${CLINICAL_DB_NAME:-clinical}
-      LIQUIBASE_COMMAND_USERNAME: ${MONGO_MIGRATOR_USER:-clinical_migrator}
+      DLC_ENVIRONMENT: ${DLC_ENVIRONMENT:?DLC_ENVIRONMENT is required (dev, qa or prod)}
+      MONGO_HOST: ${MONGO_HOST:-dlc-mongo}
+      MONGO_PORT: ${MONGO_PORT:-27017}
+      MONGO_REPLICA_SET: ${MONGO_REPLICA_SET:-rs0}
     secrets:
       - clinical_migrator_password
-    # The password is read from the secret at start, so it never appears in the environment file or the command.
-    entrypoint:
-      - /bin/sh
-      - -c
-      - LIQUIBASE_COMMAND_PASSWORD="$$(cat /run/secrets/clinical_migrator_password)" exec /liquibase/docker-entrypoint.sh "$$@"
-      - --
+    # deploy/run-migration.sh validates the stage, reads the secret and passes the stage as Liquibase context.
+    entrypoint: ["/workspace/deploy/run-migration.sh"]
+    command: ["update"]
 secrets:
   clinical_migrator_password:
     file: ${MONGO_MIGRATOR_PASSWORD_FILE:?MONGO_MIGRATOR_PASSWORD_FILE is required}

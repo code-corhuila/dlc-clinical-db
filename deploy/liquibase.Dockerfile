@@ -8,3 +8,4 @@ COPY changelog /workspace/changelog
 COPY 01_ddl /workspace/01_ddl
 COPY 02_dml /workspace/02_dml
 COPY 03_dcl /workspace/03_dcl
+COPY --chmod=755 deploy/run-migration.sh /workspace/deploy/run-migration.sh

@@ -18,6 +18,15 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 
 ### Added
 
+- Deployment by stage (`dev`, `qa`, `prod`) against the `dlc-infra-mongo` engine:
+  - `deploy/run-migration.sh` validates `DLC_ENVIRONMENT`, reads the `clinical_migrator` secret and passes the stage
+    as Liquibase `--contexts`;
+  - `deploy/compose.tls.yml` adds TLS, required in `qa` and `prod`. The CA goes into a per-run JVM truststore,
+    because the Java driver ignores `tlsCAFile`;
+  - `env/.env.<stage>.example` templates hold secret references only;
+  - the migrator now joins the `clinical-data` network. `PLATFORM_NETWORK_NAME` is still accepted;
+  - `tooling/test-environment-migration.sh` verifies all three stages.
+
 - `schema_info` with the Clinical schema version (1), validated, read-only for `clinical_application`; the services refuse
   to start below the version they require (`clinical-024` to `clinical-027`).
 - HU-CLN-003 analytics projections (ADR-006): `analytics_appointment_facts`, `analytics_weekly_activity`,

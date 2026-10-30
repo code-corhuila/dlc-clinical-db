@@ -3,3 +3,12 @@
 .idea/
 .vscode/
 *.log
+
+# Stage deployment test (tooling/test-environment-migration.sh)
+.test-env/
+
+# Stage files with real values and materialized secrets
+env/.env.dev
+env/.env.qa
+env/.env.prod
+secrets/
