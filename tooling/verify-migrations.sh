@@ -36,13 +36,13 @@ done
 docker exec "$mongo_name" mongosh --quiet --eval 'db.hello().isWritablePrimary ? 1 : 0' | grep -qx 1
 
 run_migrator() {
-  MONGO_HOST="$mongo_name" MONGO_PORT=27017 CLINICAL_DB_NAME=clinical MONGO_REPLICA_SET=rs0 PLATFORM_NETWORK_NAME="$network_name" \
+  MONGO_HOST="$mongo_name" MONGO_PORT=27017 CLINICAL_DB_NAME=clinical MONGO_REPLICA_SET=rs0 CLINICAL_DATA_NETWORK_NAME="$network_name" PLATFORM_NETWORK_NAME="$network_name" \
     docker compose -f deploy/compose.yml --profile tooling run --rm clinical-db-migrate \
       --database-changelog-table-name=databasechangelog_clinical \
       --database-changelog-lock-table-name=databasechangeloglock_clinical "$@"
 }
 
-MONGO_HOST="$mongo_name" MONGO_PORT=27017 CLINICAL_DB_NAME=clinical MONGO_REPLICA_SET=rs0 PLATFORM_NETWORK_NAME="$network_name" \
+MONGO_HOST="$mongo_name" MONGO_PORT=27017 CLINICAL_DB_NAME=clinical MONGO_REPLICA_SET=rs0 CLINICAL_DATA_NETWORK_NAME="$network_name" PLATFORM_NETWORK_NAME="$network_name" \
   docker compose -f deploy/compose.yml --profile tooling build clinical-db-migrate
 
 run_migrator update
@@ -101,7 +101,7 @@ if git rev-parse --verify --quiet "${upgrade_from}^{commit}" >/dev/null; then
   (
     cd "$previous_dir"
     export COMPOSE_PROJECT_NAME="clinical-previous-${run_id}"
-    MONGO_HOST="$mongo_name" PLATFORM_NETWORK_NAME="$network_name" docker compose -f deploy/compose.yml --profile tooling build clinical-db-migrate
+    MONGO_HOST="$mongo_name" CLINICAL_DATA_NETWORK_NAME="$network_name" PLATFORM_NETWORK_NAME="$network_name" docker compose -f deploy/compose.yml --profile tooling build clinical-db-migrate
     run_migrator update
   )
   docker image rm -f "clinical-previous-${run_id}-clinical-db-migrate" >/dev/null 2>&1 || true
