@@ -9,36 +9,16 @@ tagged `v<version>` after the merge. Nothing is merged between permanent branche
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-14
+
 MVP 2: persistence foundation of the Clinical context (MongoDB, logical database `clinical`) for HU-CLN-001
 ([#5](https://github.com/code-corhuila/dlc-clinical-db/issues/5)), HU-CLN-002
 ([#6](https://github.com/code-corhuila/dlc-clinical-db/issues/6)), HU-CLN-003
 ([#7](https://github.com/code-corhuila/dlc-clinical-db/issues/7)) and HU-XCT-001
-([#8](https://github.com/code-corhuila/dlc-clinical-db/issues/8)). No release on `main` yet; this section becomes
-`[2.0.0] - <merge date>` inside `release/2.0.0`.
+([#8](https://github.com/code-corhuila/dlc-clinical-db/issues/8)). Released through `release/2.0.0`, tagged `v2.0.0` after the merge.
 
 ### Added
 
-- Deployment by stage (`dev`, `qa`, `prod`) against the `dlc-infra-mongo` engine:
-  - `deploy/run-migration.sh` validates `DLC_ENVIRONMENT`, reads the `clinical_migrator` secret and passes the stage
-    as Liquibase `--contexts`;
-  - `deploy/compose.tls.yml` adds TLS, required in `qa` and `prod`. The CA goes into a per-run JVM truststore,
-    because the Java driver ignores `tlsCAFile`;
-  - `env/.env.<stage>.example` templates hold secret references only;
-  - the migrator now joins the `clinical-data` network. `PLATFORM_NETWORK_NAME` is still accepted;
-  - `tooling/test-environment-migration.sh` verifies all three stages.
-
-- `schema_info` with the Clinical schema version (1), validated, read-only for `clinical_application`; the services refuse
-  to start below the version they require (`clinical-024` to `clinical-027`).
-- HU-CLN-003 analytics projections (ADR-006): `analytics_appointment_facts`, `analytics_weekly_activity`,
-  `analytics_monthly_revenue` (collected COP as Decimal128, the CLN-006 analytics exception) and `analytics_processed_events`;
-  strict validators without patient identity, a unique day/dentist index, the `clinical_analytics_projector` role and
-  read-only access for `clinical_application`.
-- ADR-017 write protocol: `write_intents` (one per `operationId`, kinds `GUARDED_WRITE`/`DECLARATION`, states
-  `PENDING`/`COMPLETED`/`ABORTED`) and `encounter_admissions` (one per encounter, `OPEN`/`FROZEN`, admitted operations
-  `ADMITTED`/`COMMITTED`/`ABORTED`), with strict validators, unique and reconciliation indexes, no TTL and
-  `clinical_application` find/insert/update grants. ([#19](https://github.com/code-corhuila/dlc-clinical-db/issues/19))
-- Optional `fencedAt` on `write_intents`: recovery fences an uncommitted intent before aborting it, so a late tagged write
-  never commits after its guard is released (ADR-017).
 - Ten collections with strict `$jsonSchema` validators (`additionalProperties: false`, `validationLevel: strict`,
   `validationAction: error`): `clinical_records`, `consultations`, `diagnoses`, `clinical_entries`, `treatments`, `procedures`,
   `procedure_extras`, `care_closures`, `inbox_events` and `outbox_events`. An amendment needs both `amendsEntryId` and
@@ -58,24 +38,11 @@ MVP 2: persistence foundation of the Clinical context (MongoDB, logical database
 - Rebuild check in CI (`tooling/verify-migrations.sh`) on PRs to `develop`, `qa` and `main`, against a temporary `rs0`. It runs
   update twice (the second finds nothing pending), then status, history and validate. It checks the validators, indexes and roles,
   rolls everything back and applies it again. ([#4](https://github.com/code-corhuila/dlc-clinical-db/pull/4))
-- `idempotency_keys` collection (`clinical-004`, `clinical-005`, `clinical-007`): strict validator, unique
-  `uq_idempotency_keys_scope` (actor, operation, key), TTL index `idx_idempotency_keys_expires_at`; `clinical_application`
-  may only `find` and `insert` it (Norma 5.3.8).
 
 ### Changed
 
 - The repository no longer runs its own MongoDB or volume; it only owns the migrations of `clinical`. Compatible: no changeset was
   modified. ([#4](https://github.com/code-corhuila/dlc-clinical-db/pull/4))
-- `procedure_extras` validator aligned with `clinical-service.yaml` through `clinical-006`: `type` uses
-  `ADDITIONAL_MATERIAL` and `description` allows up to 500 characters.
-- `diagnoses` validator requires the explicit `consultationId` and accepts `appointmentId` (`clinical-008`), with index
-  `idx_diagnoses_consultation_id` (`clinical-009`) (CLN-008).
-- `consultations` accepts the optional `code` allowed by `clinical-service.yaml` (`clinical-010`); `outbox_events` stores
-  `aggregateType` and `actorUserId` for the event envelope (`clinical-011`).
-- `treatments` validator requires `createdBy`, the planning dentist (`clinical-012`) (CLN-004).
-- `care_closures` follows ADR-014: one closure per encounter (`clinicalRecordId` + `consultationId`, unique index
-  `uq_care_closures_encounter`), fixed `procedureIds`/`manualChargeIds`, the Dentist declaration fields and the
-  `AWAITING_ADMINISTRATIVE_FINALIZATION` status (`clinical-013`, `clinical-014`). The per-procedure index is removed.
 
 ### Security
 
