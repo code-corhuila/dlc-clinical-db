@@ -9,6 +9,8 @@ tagged `v<version>` after the merge. Nothing is merged between permanent branche
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-14
+
 MVP 2: persistence foundation of the Clinical context (MongoDB, logical database `clinical`) for HU-CLN-001
 ([#5](https://github.com/code-corhuila/dlc-clinical-db/issues/5)), HU-CLN-002
 ([#6](https://github.com/code-corhuila/dlc-clinical-db/issues/6)), HU-CLN-003
