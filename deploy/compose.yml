@@ -3,14 +3,17 @@ services:
     build:
       context: ..
       dockerfile: deploy/liquibase.Dockerfile
+    image: ${CLINICAL_DB_MIGRATE_IMAGE:-dlc-clinical-db-migrate:local}
     working_dir: /workspace
     environment:
       LIQUIBASE_COMMAND_URL: mongodb://${MONGO_HOST:?MONGO_HOST is required}:${MONGO_PORT:-27017}/${CLINICAL_DB_NAME:-clinical}?replicaSet=${MONGO_REPLICA_SET:-rs0}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/changelog-master.yaml
     command: ["--database-changelog-table-name=databasechangelog_clinical", "--database-changelog-lock-table-name=databasechangeloglock_clinical", "update"]
-    networks: [platform]
+    networks: [clinical-data]
     profiles: [tooling]
+# dlc-infra-mongo publishes MongoDB only on clinical-data; only the Clinical processes and this migrator join it.
+# PLATFORM_NETWORK_NAME is the former name of the variable, still accepted.
 networks:
-  platform:
-    name: ${PLATFORM_NETWORK_NAME:-platform}
+  clinical-data:
+    name: ${CLINICAL_DATA_NETWORK_NAME:-${PLATFORM_NETWORK_NAME:-clinical-data}}
     external: true

@@ -1,1 +1,12 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - changeSet:
+      id: clinical-026-insert-schema-version
+      author: dlc-clinical
+      comment: Schema version 1 covers clinical-001 to clinical-027. A later migration the services depend on raises it in 01_updates.
+      changes:
+        - insertOne:
+            collectionName: schema_info
+            document: '{"_id":"clinical","version":{"$numberInt":"1"},"updatedAt":{"$date":"2026-10-24T00:00:00Z"}}'
+      rollback:
+        - runCommand:
+            command: '{"delete":"schema_info","deletes":[{"q":{"_id":"clinical"},"limit":1}]}'

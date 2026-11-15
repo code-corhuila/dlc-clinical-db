@@ -1,1 +1,117 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - changeSet:
+      id: clinical-006-align-procedure-extras-with-contract
+      author: dlc-clinical
+      comment: Match clinical-service.yaml (type ADDITIONAL_MATERIAL, description up to 500). New changeset; clinical-001 stays untouched.
+      changes:
+        - runCommand:
+            command: '{"collMod":"procedure_extras","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","sourceRecordId","procedureId","appointmentId","type","quantity","description","clinicalReason","authorId","createdAt"],"properties":{"_id":{"bsonType":"string"},"sourceRecordId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"type":{"enum":["ADDITIONAL_MATERIAL","ADDITIONAL_PROCEDURE","COMPLEXITY_ADJUSTMENT","OTHER_AUTHORIZED_CHARGE"]},"code":{"bsonType":"string","minLength":1,"maxLength":80},"quantity":{"bsonType":["int","long","decimal"],"minimum":0,"exclusiveMinimum":true},"description":{"bsonType":"string","minLength":1,"maxLength":500},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"authorId":{"bsonType":"string"},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"procedure_extras","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","sourceRecordId","procedureId","appointmentId","type","quantity","description","clinicalReason","authorId","createdAt"],"properties":{"_id":{"bsonType":"string"},"sourceRecordId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"type":{"enum":["MATERIAL","ADDITIONAL_PROCEDURE","COMPLEXITY_ADJUSTMENT","OTHER_AUTHORIZED_CHARGE"]},"code":{"bsonType":"string","minLength":1,"maxLength":80},"quantity":{"bsonType":["int","long","decimal"],"minimum":0,"exclusiveMinimum":true},"description":{"bsonType":"string","minLength":1,"maxLength":1000},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"authorId":{"bsonType":"string"},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-008-diagnosis-requires-consultation
+      author: dlc-clinical
+      comment: CLN-008 keeps the explicit consultationId of every diagnosis (and its encounter); it is never inferred.
+      changes:
+        - runCommand:
+            command: '{"collMod":"diagnoses","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","diagnosisId","clinicalRecordId","dentistId","consultationId","text","createdAt","updatedAt","version"],"dependencies":{"amendsEntryId":["amendmentReason"],"amendmentReason":["amendsEntryId"]},"properties":{"_id":{"bsonType":"string"},"diagnosisId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"dentistId":{"bsonType":"string"},"consultationId":{"bsonType":"string","minLength":1},"appointmentId":{"bsonType":"string"},"code":{"bsonType":"string","minLength":1,"maxLength":80},"text":{"bsonType":"string","minLength":1,"maxLength":10000},"amendsEntryId":{"bsonType":"string"},"amendmentReason":{"bsonType":"string","minLength":1,"maxLength":1000},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"diagnoses","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","diagnosisId","clinicalRecordId","dentistId","text","createdAt","updatedAt","version"],"dependencies":{"amendsEntryId":["amendmentReason"],"amendmentReason":["amendsEntryId"]},"properties":{"_id":{"bsonType":"string"},"diagnosisId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"dentistId":{"bsonType":"string"},"code":{"bsonType":"string","minLength":1,"maxLength":80},"text":{"bsonType":"string","minLength":1,"maxLength":10000},"amendsEntryId":{"bsonType":"string"},"amendmentReason":{"bsonType":"string","minLength":1,"maxLength":1000},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-010-consultation-code
+      author: dlc-clinical
+      comment: clinical-service.yaml allows an optional code on every entry kind, consultations included.
+      changes:
+        - runCommand:
+            command: '{"collMod":"consultations","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","consultationId","clinicalRecordId","dentistId","text","createdAt","updatedAt","version"],"dependencies":{"amendsEntryId":["amendmentReason"],"amendmentReason":["amendsEntryId"]},"properties":{"_id":{"bsonType":"string"},"consultationId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"dentistId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"code":{"bsonType":"string","minLength":1,"maxLength":80},"text":{"bsonType":"string","minLength":1,"maxLength":10000},"amendsEntryId":{"bsonType":"string"},"amendmentReason":{"bsonType":"string","minLength":1,"maxLength":1000},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"consultations","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","consultationId","clinicalRecordId","dentistId","text","createdAt","updatedAt","version"],"dependencies":{"amendsEntryId":["amendmentReason"],"amendmentReason":["amendsEntryId"]},"properties":{"_id":{"bsonType":"string"},"consultationId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"dentistId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"text":{"bsonType":"string","minLength":1,"maxLength":10000},"amendsEntryId":{"bsonType":"string"},"amendmentReason":{"bsonType":"string","minLength":1,"maxLength":1000},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-011-outbox-envelope-metadata
+      author: dlc-clinical
+      comment: The event envelope needs aggregateType and metadata.actorUserId; the relay reads them from the outbox row.
+      changes:
+        - runCommand:
+            command: '{"collMod":"outbox_events","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","eventId","eventType","eventVersion","aggregateId","correlationId","causationId","payload","occurredAt","status","attempts","createdAt"],"properties":{"_id":{"bsonType":"string"},"eventId":{"bsonType":"string"},"eventType":{"bsonType":"string","minLength":1,"maxLength":200},"eventVersion":{"bsonType":"string","minLength":1,"maxLength":40},"aggregateId":{"bsonType":"string"},"aggregateType":{"bsonType":"string","minLength":1,"maxLength":100},"actorUserId":{"bsonType":"string"},"correlationId":{"bsonType":"string"},"causationId":{"bsonType":"string"},"payload":{"bsonType":"object"},"occurredAt":{"bsonType":"date"},"publishedAt":{"bsonType":"date"},"status":{"enum":["PENDING","PUBLISHED","FAILED"]},"attempts":{"bsonType":["int","long"],"minimum":0},"nextAttemptAt":{"bsonType":"date"},"failureReason":{"bsonType":"string","maxLength":500},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"outbox_events","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","eventId","eventType","eventVersion","aggregateId","correlationId","causationId","payload","occurredAt","status","attempts","createdAt"],"properties":{"_id":{"bsonType":"string"},"eventId":{"bsonType":"string"},"eventType":{"bsonType":"string","minLength":1,"maxLength":200},"eventVersion":{"bsonType":"string","minLength":1,"maxLength":40},"aggregateId":{"bsonType":"string"},"correlationId":{"bsonType":"string"},"causationId":{"bsonType":"string"},"payload":{"bsonType":"object"},"occurredAt":{"bsonType":"date"},"publishedAt":{"bsonType":"date"},"status":{"enum":["PENDING","PUBLISHED","FAILED"]},"attempts":{"bsonType":["int","long"],"minimum":0},"nextAttemptAt":{"bsonType":"date"},"failureReason":{"bsonType":"string","maxLength":500},"createdAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-012-treatment-author
+      author: dlc-clinical
+      comment: CLN-004 keeps the author of every clinical act; the treatment plan stores its planning dentist.
+      changes:
+        - runCommand:
+            command: '{"collMod":"treatments","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","treatmentId","clinicalRecordId","patientId","status","procedures","createdBy","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"treatmentId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"patientId":{"bsonType":"string"},"diagnosisId":{"bsonType":"string"},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"status":{"enum":["PLANNED","IN_PROGRESS","COMPLETED","CANCELLED"]},"procedures":{"bsonType":"array","minItems":1,"maxItems":100,"items":{"bsonType":"object","additionalProperties":false,"required":["procedureId","procedureCode","appointmentId","status"],"properties":{"procedureId":{"bsonType":"string"},"procedureCode":{"bsonType":"string","minLength":1,"maxLength":80},"appointmentId":{"bsonType":"string"},"status":{"enum":["PLANNED","IN_PROGRESS","COMPLETED","CANCELLED"]}}}},"createdBy":{"bsonType":"string","minLength":1},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"treatments","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","treatmentId","clinicalRecordId","patientId","status","procedures","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"treatmentId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"patientId":{"bsonType":"string"},"diagnosisId":{"bsonType":"string"},"clinicalReason":{"bsonType":"string","minLength":1,"maxLength":1000},"status":{"enum":["PLANNED","IN_PROGRESS","COMPLETED","CANCELLED"]},"procedures":{"bsonType":"array","minItems":1,"maxItems":100,"items":{"bsonType":"object","additionalProperties":false,"required":["procedureId","procedureCode","appointmentId","status"],"properties":{"procedureId":{"bsonType":"string"},"procedureCode":{"bsonType":"string","minLength":1,"maxLength":80},"appointmentId":{"bsonType":"string"},"status":{"enum":["PLANNED","IN_PROGRESS","COMPLETED","CANCELLED"]}}}},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-013-care-closure-by-encounter
+      author: dlc-clinical
+      comment: ADR-014 tracks one closure per encounter, created by the Dentist declaration (CLN-009); the collection never held per-procedure data.
+      changes:
+        - runCommand:
+            command: '{"collMod":"care_closures","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","closureId","clinicalRecordId","consultationId","appointmentId","patientId","dentistId","procedureIds","manualChargeIds","status","appointmentOutcome","billingOutcome","correlationId","causationId","completedAt","clinicalVersion","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"closureId":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string"},"consultationId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"patientId":{"bsonType":"string"},"dentistId":{"bsonType":"string"},"procedureIds":{"bsonType":"array","maxItems":100,"uniqueItems":true,"items":{"bsonType":"string","minLength":1}},"manualChargeIds":{"bsonType":"array","maxItems":100,"uniqueItems":true,"items":{"bsonType":"string","minLength":1}},"status":{"enum":["AWAITING_ADMINISTRATIVE_FINALIZATION","CLOSURE_PENDING","CLOSURE_COMPLETED","CLOSURE_FAILED"]},"appointmentOutcome":{"enum":["PENDING","COMPLETED"]},"billingOutcome":{"enum":["PENDING","COMPLETED"]},"failureReason":{"bsonType":"string","minLength":1,"maxLength":500},"correlationId":{"bsonType":"string"},"causationId":{"bsonType":"string"},"completedAt":{"bsonType":"date"},"clinicalVersion":{"bsonType":["int","long"],"minimum":1},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"care_closures","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","closureId","procedureId","appointmentId","status","appointmentOutcome","billingOutcome","correlationId","causationId","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"closureId":{"bsonType":"string"},"procedureId":{"bsonType":"string"},"appointmentId":{"bsonType":"string"},"status":{"enum":["CLOSURE_PENDING","CLOSURE_COMPLETED","CLOSURE_FAILED"]},"appointmentOutcome":{"enum":["PENDING","COMPLETED"]},"billingOutcome":{"enum":["PENDING","COMPLETED"]},"failureReason":{"bsonType":"string","minLength":1,"maxLength":500},"correlationId":{"bsonType":"string"},"causationId":{"bsonType":"string"},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-016-validate-write-intents-and-admissions
+      author: dlc-clinical
+      comment: ADR-017 intents and encounter admissions; identifiers and states only, never monetary values. resourceId and committedAt are set in the same transaction as the guarded write, so reconciliation decides from Clinical data.
+      changes:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"encounter_admissions","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","clinicalRecordId","consultationId","admissionState","admissions","createdAt","updatedAt","version"],"properties":{"_id":{"bsonType":"string"},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"admissionState":{"enum":["OPEN","FROZEN"]},"frozenBy":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"admissions":{"bsonType":"array","maxItems":1000,"items":{"bsonType":"object","additionalProperties":false,"required":["operationId","state"],"properties":{"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"state":{"enum":["ADMITTED","COMMITTED","ABORTED"]}}}},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"},"version":{"bsonType":["int","long"],"minimum":1}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"encounter_admissions","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{},"validationLevel":"off"}'
+  - changeSet:
+      id: clinical-019-write-intent-fence
+      author: dlc-clinical
+      comment: ADR-017 recovery fences an uncommitted intent (fencedAt) before aborting it, so a late tagged write can never commit after its guard is released.
+      changes:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"fencedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"write_intents","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","operationId","kind","patientId","state","createdAt","updatedAt"],"properties":{"_id":{"bsonType":"string"},"operationId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"kind":{"enum":["GUARDED_WRITE","DECLARATION"]},"patientId":{"bsonType":"string","minLength":1},"clinicalRecordId":{"bsonType":"string","minLength":1},"consultationId":{"bsonType":"string","minLength":1},"guardId":{"bsonType":"string","minLength":1},"resourceId":{"bsonType":"string","minLength":1},"committedAt":{"bsonType":"date"},"state":{"enum":["PENDING","COMPLETED","ABORTED"]},"createdAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+  - changeSet:
+      id: clinical-021-validate-analytics-projections
+      author: dlc-clinical
+      comment: Counts by appointmentId and dentistId only; no patient identity or clinical narrative. Collected revenue is the only money, as the CLN-006 analytics exception allows (PD-CLN003-05).
+      changes:
+        - runCommand:
+            command: '{"collMod":"analytics_appointment_facts","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","appointmentId","dentistId","startAt","status","sourceEventId","sourceEventType","sourceOccurredAt","updatedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"appointmentId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"dentistId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"startAt":{"bsonType":"date"},"status":{"enum":["SCHEDULED","CANCELADA","NO_ASISTIO","FINALIZADA"]},"appointmentVersion":{"bsonType":["int","long"],"minimum":1},"sourceEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"sourceEventType":{"bsonType":"string","minLength":1,"maxLength":200},"sourceOccurredAt":{"bsonType":"date"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_weekly_activity","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","day","dentistId","count","lastEventId","updatedAt"],"properties":{"_id":{"bsonType":"string","minLength":1},"day":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}-\\d{2}$"},"dentistId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"count":{"bsonType":["int","long"],"minimum":0},"lastEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_monthly_revenue","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","month","collected","payments","lastEventId","updatedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}$"},"month":{"bsonType":"string","pattern":"^\\d{4}-\\d{2}$"},"collected":{"bsonType":"decimal"},"payments":{"bsonType":["int","long"],"minimum":0},"lastEventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+        - runCommand:
+            command: '{"collMod":"analytics_processed_events","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","eventId","eventType","occurredAt","processedAt"],"properties":{"_id":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"eventId":{"bsonType":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},"eventType":{"bsonType":"string","minLength":1,"maxLength":200},"occurredAt":{"bsonType":"date"},"processedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"analytics_processed_events","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_monthly_revenue","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_weekly_activity","validator":{},"validationLevel":"off"}'
+        - runCommand:
+            command: '{"collMod":"analytics_appointment_facts","validator":{},"validationLevel":"off"}'
+  - changeSet:
+      id: clinical-025-validate-schema-info
+      author: dlc-clinical
+      comment: Only the clinical row, with a positive integer version.
+      changes:
+        - runCommand:
+            command: '{"collMod":"schema_info","validator":{"$jsonSchema":{"bsonType":"object","additionalProperties":false,"required":["_id","version","updatedAt"],"properties":{"_id":{"enum":["clinical"]},"version":{"bsonType":["int","long"],"minimum":1},"updatedAt":{"bsonType":"date"}}}},"validationLevel":"strict","validationAction":"error"}'
+      rollback:
+        - runCommand:
+            command: '{"collMod":"schema_info","validator":{},"validationLevel":"off"}'

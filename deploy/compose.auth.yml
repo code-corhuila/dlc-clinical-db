@@ -1,0 +1,18 @@
+# Stage runner (dev, qa, prod): authenticated migrations against the dlc-infra-mongo engine as clinical_migrator
+# (ADR-009). Use together with compose.yml, and add compose.tls.yml in qa and prod. The password file is
+# materialized from the stage secret and never committed; the API never receives it.
+services:
+  clinical-db-migrate:
+    environment:
+      DLC_ENVIRONMENT: ${DLC_ENVIRONMENT:?DLC_ENVIRONMENT is required (dev, qa or prod)}
+      MONGO_HOST: ${MONGO_HOST:-dlc-mongo}
+      MONGO_PORT: ${MONGO_PORT:-27017}
+      MONGO_REPLICA_SET: ${MONGO_REPLICA_SET:-rs0}
+    secrets:
+      - clinical_migrator_password
+    # deploy/run-migration.sh validates the stage, reads the secret and passes the stage as Liquibase context.
+    entrypoint: ["/workspace/deploy/run-migration.sh"]
+    command: ["update"]
+secrets:
+  clinical_migrator_password:
+    file: ${MONGO_MIGRATOR_PASSWORD_FILE:?MONGO_MIGRATOR_PASSWORD_FILE is required}

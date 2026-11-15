@@ -16,3 +16,47 @@ databaseChangeLog:
             command: '{"dropRole":"clinical_inbox_consumer"}'
         - runCommand:
             command: '{"dropRole":"clinical_application"}'
+  - changeSet:
+      id: clinical-007-grant-idempotency-keys
+      author: dlc-clinical
+      comment: The service reads and inserts retry records; expiry is handled by the TTL index, so no remove/update.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"idempotency_keys"},"actions":["find","insert"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"idempotency_keys"},"actions":["find","insert"]}]}'
+  - changeSet:
+      id: clinical-018-grant-write-intents-and-admissions
+      author: dlc-clinical
+      comment: The service and its reconciler read, insert and update intents and admissions; nothing is removed, and no DDL privilege is granted.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"write_intents"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"encounter_admissions"},"actions":["find","insert","update"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"write_intents"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"encounter_admissions"},"actions":["find","insert","update"]}]}'
+  - changeSet:
+      id: clinical-023-analytics-roles
+      author: dlc-clinical
+      comment: The analytics consumer writes projections; the API only reads them. Rebuilding (drop and replay) is a migration-identity operation.
+      changes:
+        - runCommand:
+            command: '{"createRole":"clinical_analytics_projector","privileges":[{"resource":{"db":"clinical","collection":"analytics_appointment_facts"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"analytics_weekly_activity"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"analytics_monthly_revenue"},"actions":["find","insert","update"]},{"resource":{"db":"clinical","collection":"analytics_processed_events"},"actions":["find","insert","update"]}],"roles":[]}'
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"analytics_appointment_facts"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_weekly_activity"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_monthly_revenue"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_processed_events"},"actions":["find"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"analytics_appointment_facts"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_weekly_activity"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_monthly_revenue"},"actions":["find"]},{"resource":{"db":"clinical","collection":"analytics_processed_events"},"actions":["find"]}]}'
+        - runCommand:
+            command: '{"dropRole":"clinical_analytics_projector"}'
+  - changeSet:
+      id: clinical-027-grant-schema-info-read
+      author: dlc-clinical
+      comment: The services read the schema version at startup; only the migration identity changes it.
+      changes:
+        - runCommand:
+            command: '{"grantPrivilegesToRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"schema_info"},"actions":["find"]}]}'
+      rollback:
+        - runCommand:
+            command: '{"revokePrivilegesFromRole":"clinical_application","privileges":[{"resource":{"db":"clinical","collection":"schema_info"},"actions":["find"]}]}'
